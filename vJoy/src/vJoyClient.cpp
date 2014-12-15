@@ -62,18 +62,7 @@ _tmain(__in int argc, __in PZPWSTR argv)
 		return 1;
 	}
 
-	USHORT X, Y, Z, ZR, XR;							// Position of several axes
-	JOYSTICK_POSITION	iReport;					// The structure that holds the full position data
-	BYTE id=1;										// ID of the target vjoy device (Default is 1)
-	UINT iInterface=1;								// Default target vJoy device
-	BOOL ContinuousPOV=FALSE;						// Continuous POV hat (or 4-direction POV Hat)
-	int count=0;
-
-
-	// Get the ID of the target vJoy device
-	if (argc>1 && wcslen(argv[1]))
-		sscanf_s((char *)(argv[1]), "%d", &iInterface);
-
+	UINT interfaceId = 1; // Default target vJoy device
 
 	// Get the driver attributes (Vendor ID, Product ID, Version Number)
 	if (!vJoyEnabled())
@@ -87,39 +76,39 @@ _tmain(__in int argc, __in PZPWSTR argv)
 	};
 
 	// Get the state of the requested device
-	VjdStat status = GetVJDStatus(iInterface);
+	VjdStat status = GetVJDStatus(interfaceId);
 	switch (status)
 	{
 	case VJD_STAT_OWN:
-		_tprintf("vJoy Device %d is already owned by this feeder\n", iInterface);
+		_tprintf("vJoy Device %d is already owned by this feeder\n", interfaceId);
 		break;
 	case VJD_STAT_FREE:
-		_tprintf("vJoy Device %d is free\n", iInterface);
+		_tprintf("vJoy Device %d is free\n", interfaceId);
 		break;
 	case VJD_STAT_BUSY:
-		_tprintf("vJoy Device %d is already owned by another feeder\nCannot continue\n", iInterface);
+		_tprintf("vJoy Device %d is already owned by another feeder\nCannot continue\n", interfaceId);
 		return -3;
 	case VJD_STAT_MISS:
-		_tprintf("vJoy Device %d is not installed or disabled\nCannot continue\n", iInterface);
+		_tprintf("vJoy Device %d is not installed or disabled\nCannot continue\n", interfaceId);
 		return -4;
 	default:
-		_tprintf("vJoy Device %d general error\nCannot continue\n", iInterface);
+		_tprintf("vJoy Device %d general error\nCannot continue\n", interfaceId);
 		return -1;
 	};
 
 	// Check which axes are supported
-	BOOL AxisX  = GetVJDAxisExist(iInterface, HID_USAGE_X);
-	BOOL AxisY  = GetVJDAxisExist(iInterface, HID_USAGE_Y);
-	BOOL AxisZ  = GetVJDAxisExist(iInterface, HID_USAGE_Z);
-	BOOL AxisRX = GetVJDAxisExist(iInterface, HID_USAGE_RX);
-	BOOL AxisRZ = GetVJDAxisExist(iInterface, HID_USAGE_RZ);
+	BOOL AxisX = GetVJDAxisExist(interfaceId, HID_USAGE_X);
+	BOOL AxisY = GetVJDAxisExist(interfaceId, HID_USAGE_Y);
+	BOOL AxisZ = GetVJDAxisExist(interfaceId, HID_USAGE_Z);
+	BOOL AxisRX = GetVJDAxisExist(interfaceId, HID_USAGE_RX);
+	BOOL AxisRZ = GetVJDAxisExist(interfaceId, HID_USAGE_RZ);
 	// Get the number of buttons and POV Hat switchessupported by this vJoy device
-	int nButtons  = GetVJDButtonNumber(iInterface);
-	int ContPovNumber = GetVJDContPovNumber(iInterface);
-	int DiscPovNumber = GetVJDDiscPovNumber(iInterface);
+	int nButtons = GetVJDButtonNumber(interfaceId);
+	int ContPovNumber = GetVJDContPovNumber(interfaceId);
+	int DiscPovNumber = GetVJDDiscPovNumber(interfaceId);
 
 	// Print results
-	_tprintf("\nvJoy Device %d capabilities:\n", iInterface);
+	_tprintf("\nvJoy Device %d capabilities:\n", interfaceId);
 	_tprintf("Numner of buttons\t\t%d\n", nButtons);
 	_tprintf("Numner of Continuous POVs\t%d\n", ContPovNumber);
 	_tprintf("Numner of Descrete POVs\t\t%d\n", DiscPovNumber);
@@ -132,14 +121,14 @@ _tmain(__in int argc, __in PZPWSTR argv)
 
 
 	// Acquire the target
-	if ((status == VJD_STAT_OWN) || ((status == VJD_STAT_FREE) && (!AcquireVJD(iInterface))))
+	if ((status == VJD_STAT_OWN) || ((status == VJD_STAT_FREE) && (!AcquireVJD(interfaceId))))
 	{
-		_tprintf("Failed to acquire vJoy device number %d.\n", iInterface);
+		_tprintf("Failed to acquire vJoy device number %d.\n", interfaceId);
 		return -1;
 	}
 	else
 	{
-		_tprintf("Acquired: vJoy device number %d.\n", iInterface);
+		_tprintf("Acquired: vJoy device number %d.\n", interfaceId);
 	}
 
 	while (true)
@@ -147,14 +136,14 @@ _tmain(__in int argc, __in PZPWSTR argv)
 		const auto input = readInput(serial);
 		std::cout << "Input: " << readInput(serial) << std::endl;
 
-		SetBtn(isPressed(input, Button::b), iInterface, 1);
-		SetBtn(isPressed(input, Button::a), iInterface, 2);
-		SetBtn(isPressed(input, Button::y), iInterface, 3);
-		SetBtn(isPressed(input, Button::x), iInterface, 4);
-		SetBtn(isPressed(input, Button::l), iInterface, 5);
-		SetBtn(isPressed(input, Button::r), iInterface, 6);
-		SetBtn(isPressed(input, Button::start), iInterface, 7);
-		SetBtn(isPressed(input, Button::select), iInterface, 8);
+		SetBtn(isPressed(input, Button::b), interfaceId, 1);
+		SetBtn(isPressed(input, Button::a), interfaceId, 2);
+		SetBtn(isPressed(input, Button::y), interfaceId, 3);
+		SetBtn(isPressed(input, Button::x), interfaceId, 4);
+		SetBtn(isPressed(input, Button::l), interfaceId, 5);
+		SetBtn(isPressed(input, Button::r), interfaceId, 6);
+		SetBtn(isPressed(input, Button::start), interfaceId, 7);
+		SetBtn(isPressed(input, Button::select), interfaceId, 8);
 
 		int x = 1;
 		int y = 1;
@@ -167,8 +156,8 @@ _tmain(__in int argc, __in PZPWSTR argv)
 		if (isPressed(input, Button::down))
 			++y;
 
-		SetAxis(x * 16384, iInterface, HID_USAGE_X);
-		SetAxis(y * 16384, iInterface, HID_USAGE_Y);
+		SetAxis(x * 16384, interfaceId, HID_USAGE_X);
+		SetAxis(y * 16384, interfaceId, HID_USAGE_Y);
 	}
 
 	return 0;
